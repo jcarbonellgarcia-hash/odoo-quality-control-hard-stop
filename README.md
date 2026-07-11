@@ -18,7 +18,7 @@ Antes de cambiar el trigger, había que confirmar cómo se genera el Fail en el 
 
 Con la pestaña **Network** del navegador abierta al pulsar el botón de Fail en Shop Floor, se confirma que la acción llama a un método interno: **`action_fail_and_next`** — no un `write()` genérico sobre un formulario.
 
-![Diagnóstico método real](screenshots/01-diagnostico-metodo-real-network.png)
+![Diagnóstico método real](screenshots/01-diagnostico-metodo-real-network.png.PNG)
 
 Esto descarta el trigger **"On UI change"** (solo reacciona a ediciones manuales de campo en formulario) y apunta a un trigger síncrono a nivel ORM.
 
@@ -26,7 +26,7 @@ Esto descarta el trigger **"On UI change"** (solo reacciona a ediciones manuales
 
 Antes de validar la solución, apareció un falso positivo: la regla se disparaba sobre Quality Checks antiguos, ya en Failed desde sesiones de prueba anteriores, sin relación con la MO que se estaba creando.
 
-![Checks sin resolver, sin filtro](screenshots/02-checks-sin-resolver-sin-filtro.png)
+![Checks sin resolver, sin filtro](screenshots/02-checks-sin-resolver-sin-filtro.png-1.png)
 
 Causa: el domain de la Automation Rule estaba en "Match all records", sin restricción por estado, y el campo "When updating" estaba vacío — la regla se ejecutaba en cualquier escritura sobre cualquier Quality Check, no solo en la transición hacia Failed.
 
@@ -46,17 +46,17 @@ if record.workorder_id:
     raise UserError("Quality Check failed: no se puede continuar sin resolver el defecto.")
 ```
 
-![Automation Rule configuración final](screenshots/03-automation-rule-configuracion-final.png)
+![Automation Rule configuración final](screenshots/03-automation-rule-configuracion-final.png-1.png)
 
 ## Verificación
 
 **1. Backend** — Quality Check marcado Failed manualmente:
 
-![Verificación backend](screenshots/04-verificacion-backend-invalid-operation.png)
+![Verificación backend](screenshots/04-verificacion-backend-invalid-operation.png-1.png)
 
 **2. Shop Floor** — Fail forzado desde el botón real de producción (`action_fail_and_next`), el escenario que realmente importa:
 
-![Verificación Shop Floor](screenshots/05-verificacion-shopfloor-invalid-operation.png)
+![Verificación Shop Floor](screenshots/05-verificacion-shopfloor-invalid-operation.png.png)
 
 En ambos casos, la orden de fabricación se frena al instante, sin retraso de cron.
 
@@ -66,10 +66,9 @@ El código también intenta bloquear el Work Center compartido (`working_state =
 
 Esa escritura no persiste. El chatter registra "AUTOMATION FIRED: Quality Check failed", pero el campo `working_state` nunca cambia:
 
-![Work Center sin bloqueo persistente](screenshots/06-workcenter-sin-bloqueo-persistente.png)
+![Work Center sin bloqueo persistente](screenshots/06-workcenter-sin-bloqueo-persistente.png.png)
 
-![Shop Floor sin indicador de bloqueo](screenshots/07-shopfloor-sin-indicador-bloqueo.png)
-
+![Shop Floor sin indicador de bloqueo](screenshots/07-shopfloor-sin-indicador-bloqueo.png-1.png)
 **Causa probable:** el `raise UserError` provoca un rollback de la transacción completa. El `write()` sobre el Work Center, ejecutado antes del `raise` en el mismo bloque de código, se revierte junto con él — mientras que el log del chatter parece persistir por un mecanismo de registro separado.
 
 ## Conclusión
