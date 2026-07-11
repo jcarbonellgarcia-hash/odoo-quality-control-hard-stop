@@ -1,6 +1,6 @@
 # Odoo Quality Control — Hard Stop
 
-## El problema
+## El problema-
 
 En Odoo Manufacturing, un Quality Point tipo **Pass-Fail** no bloquea la producción por diseño. Forzar un `Fail` en un Quality Check deja la orden de fabricación avanzar exactamente igual — sin bloqueo ni advertencia. Confirmado con el foro oficial de Odoo: el único bloqueo nativo real es el botón manual "Block" del Work Center en Shop Floor, decisión humana, no automática.
 
